@@ -39,15 +39,17 @@ export const ScrapeForm = () => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ topic: searchQuery }),
-      });
-      console.log('Response from server:', response);
-      // if (response.ok) {
-        const data = await response.json();
-        console.log("data...");
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Success:', data);
         setArticles(data.slice(0, 5));
-      // } else {
-      //   console.error('Failed to fetch articles');
-      // }
+      });
+
     } catch (error) {
       console.log('Error fetching articles:', error);
     } finally {
