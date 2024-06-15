@@ -11,22 +11,46 @@ const SkeletonArticle = () => (
   </div>
 );
 
-const ExtractData = (data) => {
-  return data.flat().flatMap((el) => {
-    const posts = el.data.search.posts.items;
-    if (posts) {
-      return posts.map((item) => ({
-        author : item.creator.name,
-        title: item.title || "Untitled",
-        description: item.extendedPreviewContent.subtitle || "No description available",
-        url: `https://medium.com/p/${item.id}`,
-      }));
-    } else {
-      console.log("Unexpected data structure:", el);
-      return [];
-    }
+const convertDate = (timestamp) => {
+  const date = new Date(timestamp);
+  const formattedDate = date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
+
+  return formattedDate;
 };
+
+const ExtractData = (data) => {
+  const uniquePosts = new Set();
+  
+  return data.flat().flatMap((el) => {
+    const posts = el?.data?.search?.posts?.items || [];
+    const collections = el?.data?.search?.collections?.items || [];
+
+    return posts.map((item, idx) => {
+      const matchingCollection = collections.find((col, i) => i === idx);
+      const timestamp = item.createdAt || item?.latestPublishedAt;
+
+      const post = {
+        author: item.creator.name,
+        title: item.title || "Untitled",
+        description: matchingCollection ? matchingCollection.description : (item?.extendedPreviewContent?.subtitle || "No description available"),
+        url: `https://medium.com/p/${item.id}`,
+        date: convertDate(timestamp)
+      };
+      if (!uniquePosts.has(post)) {
+        uniquePosts.add(post);
+        return post;
+      } else {
+        return null;
+      }
+    }).filter(post => post !== null);
+  })
+}
 
 export const ScrapeForm = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,8 +143,11 @@ export const ScrapeForm = () => {
                 shadow="md"
                 transition="transform 0.2s, box-shadow 0.2s"
                 _hover={{ transform: 'scale(1.05)', shadow: 'lg' }}
+                gap={2}
               >
-                <Text fontSize="sm" fontWeight="semibold" color="gray.700">{article.author}</Text>
+                <Text fontSize="sm" fontWeight="semibold" color="gray.700">{article.author}
+                <span style={{marginLeft : '10px', fontSize : '13px', color : 'gray'}}>{article.date}</span>
+                </Text>
                 <Heading as="h3" fontSize="lg" fontWeight="semibold" color="gray.900">{article.title}</Heading>
                 <Text fontSize="sm" color="gray.600">{article.description}</Text>
                 <Link
