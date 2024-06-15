@@ -18,7 +18,7 @@ const ExtractData = (data) => {
       return posts.map((item) => ({
         author : item.creator.name,
         title: item.title || "Untitled",
-        excerpt: item.excerpt || "No excerpt available",
+        description: item.extendedPreviewContent.subtitle || "No description available",
         url: `https://medium.com/p/${item.id}`,
       }));
     } else {
@@ -52,7 +52,7 @@ export const ScrapeForm = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`http://localhost:3000/scrape`, {
+      const response = await axios.post(`https://article-scraper-and-viewer.onrender.com/scrape`, {
         topic: searchQuery,
       });
       const data = response.data;
@@ -122,7 +122,7 @@ export const ScrapeForm = () => {
               >
                 <Text fontSize="sm" fontWeight="semibold" color="gray.700">{article.author}</Text>
                 <Heading as="h3" fontSize="lg" fontWeight="semibold" color="gray.900">{article.title}</Heading>
-                <Text fontSize="sm" color="gray.600">{article.excerpt}</Text>
+                <Text fontSize="sm" color="gray.600">{article.description}</Text>
                 <Link
                   href={article.url}
                   isExternal
