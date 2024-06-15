@@ -52,7 +52,7 @@ export const ScrapeForm = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`https://article-scraper-and-viewer.onrender.com/scrape`, {
+      const response = await axios.post(`http://localhost:3000/scrape`, {
         topic: searchQuery,
       });
       const data = response.data;
