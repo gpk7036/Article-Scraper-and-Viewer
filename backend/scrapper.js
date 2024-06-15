@@ -5,9 +5,9 @@ puppeteer.use(StealthPlugin());
 
 let pp = [];
 
-const openmediem = async (searchQuery) => {
+const scrapeData = async (searchQuery) => {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
   });
   const page = await browser.newPage();
 
@@ -51,8 +51,9 @@ const openmediem = async (searchQuery) => {
       console.log("Save element:", element);
     }, searchQuery);
 
-    await delay(6000);
+    await delay(1000);
     await browser.close();
+    return pp;
   } catch (error) {
     console.error('Error during scraping:', error);
   }
@@ -60,19 +61,10 @@ const openmediem = async (searchQuery) => {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Example usage: Pass the search query from the frontend to openmediem function
-const searchQueryFromFrontend = "svg in angular js";
-openmediem(searchQueryFromFrontend).then(() => {
-  newfun();
-});
+const maindata =async(data)=>{
+  pp=[];
+  await scrapeData(data);
+  return pp;
 
-const newfun = () => {
-  console.log("Save element:", pp);
-  console.log(pp[0]?.[0]?.data?.search?.posts?.items);
-  console.log("Save element:", pp[1]?.[0]?.data?.search?.posts?.items);
-  console.log("Save element:", pp[0]?.[0]?.data?.search?.posts?.items.length);
-  console.log("Save element:", pp[1]?.[0]?.data?.search?.posts?.items.length);
-  console.log("Save element:", JSON.stringify(pp[2]));
-};
-
- module.exports = openmediem;
+}
+ module.exports = maindata;

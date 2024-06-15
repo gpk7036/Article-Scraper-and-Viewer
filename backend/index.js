@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const openmediem = require('./scrapper');
+const maindata = require('./scrapper');
 
 const app = express();
 const port = 3000;
@@ -20,10 +20,12 @@ const getArticles = () => {
 
 app.post('/scrape', async (req, res) => {
     const { topic } = req.body;
+    console.log(topic);
     try {
-        const scrapedArticles = await openmediem(topic);
-        setArticles(scrapedArticles);
-        res.json(scrapedArticles); 
+        const scrapedArticles = await maindata(topic);
+        console.log('articles:- ',scrapedArticles);
+        setArticles(scrapedArticles)
+        res.send(JSON.stringify(scrapedArticles)); 
     } catch (error) {
         console.error('Error scraping Medium:', error);
         res.status(500).json({ error: 'Failed to scrape articles' });

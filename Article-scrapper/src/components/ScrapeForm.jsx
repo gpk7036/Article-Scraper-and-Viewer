@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import '../App.css';
+import React, { useState, useEffect } from "react";
+import "../App.css";
+import axios from "axios";
+import { Box, Button, Container, Flex, Heading, Input, Text, Grid, Link } from '@chakra-ui/react';
 
 const SkeletonArticle = () => (
   <div className="bg-white p-4 rounded-lg shadow-md animate-pulse">
@@ -9,8 +11,25 @@ const SkeletonArticle = () => (
   </div>
 );
 
+const ExtractData = (data) => {
+  return data.flat().flatMap((el) => {
+    const posts = el.data.search.posts.items;
+    if (posts) {
+      return posts.map((item) => ({
+        author : item.creator.name,
+        title: item.title || "Untitled",
+        excerpt: item.excerpt || "No excerpt available",
+        url: `https://medium.com/p/${item.id}`,
+      }));
+    } else {
+      console.log("Unexpected data structure:", el);
+      return [];
+    }
+  });
+};
+
 export const ScrapeForm = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [articles, setArticles] = useState([]);
   const [timer, setTimer] = useState(0);
@@ -33,81 +52,92 @@ export const ScrapeForm = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`https://article-scraper-and-viewer.onrender.com/scrape`, {
-        method: 'POST',
-        headers : {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ topic: searchQuery }),
-      }).then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Success:', data);
-        setArticles(data.slice(0, 5));
+      const response = await axios.post(`http://localhost:3000/scrape`, {
+        topic: searchQuery,
       });
-
+      const data = response.data;
+      console.log("Success:", data);
+      const extractedArticles = ExtractData(data);
+      console.log(extractedArticles);
+      setArticles(extractedArticles.slice(0, 5));
     } catch (error) {
-      console.log('Error fetching articles:', error);
+      console.log("Error fetching articles:", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
-      <header className="App-header text-white bg-gray-800 w-full py-4 flex justify-between items-center">
-        <h1 className="text-3xl font-bold ml-4">Medium Search</h1>
-        <div className="mr-4">
-          {loading && <span className="text-xs text-gray-400">Loading Time: {timer} seconds</span>}
-        </div>
-      </header>
-      <div className="container mx-auto p-4">
-        <div className="flex items-center space-x-4 mb-4">
-          <input
+    <Box w='full' h='full' bg="gray.100" display="flex" flexDirection="column" px={6}>
+      <Box as="header" w="full" py={4} display="flex" justifyContent="space-between" textAlign="center">
+        <Heading as="h1" fontSize="3xl" textAlign="center" w='full'>Medium Search</Heading>
+        <Box mr={4}>
+          {loading && (
+            <Text fontSize="xs" color="gray.400">
+              Loading Time: {timer} seconds
+            </Text>
+          )}
+        </Box>
+      </Box>
+      <Container maxW="container.lg" py={4}>
+        <Flex align="center" justify="center" mb={4} gap={4}>
+          <Input
             type="text"
             placeholder="Enter search query..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="p-2 border border-gray-300 rounded-lg w-full max-w-md"
+            size="md"
+            borderColor="gray.300"
+            focusBorderColor="blue.500"
+            flex="1"
+            maxW="lg"
           />
-          <button
+          <Button
             onClick={handleSearch}
-            disabled={loading}
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+            isLoading={loading}
+            colorScheme="blue"
+            size="md"
           >
-            {loading ? 'Searching...' : 'Search'}
-          </button>
-        </div>
+            Search
+          </Button>
+        </Flex>
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={4}>
             {[1, 2, 3, 4, 5].map((index) => (
               <SkeletonArticle key={index} />
             ))}
-          </div>
+          </Grid>
         )}
         {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={4}>
             {articles.map((article, index) => (
-              <div key={index} className="bg-white p-4 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold">{article.title}</h3>
-                <p className="text-sm text-gray-600">{article.excerpt}</p>
-                <a
+              <Box
+                key={index}
+                bg="white"
+                p={4}
+                rounded="lg"
+                shadow="md"
+                transition="transform 0.2s, box-shadow 0.2s"
+                _hover={{ transform: 'scale(1.05)', shadow: 'lg' }}
+              >
+                <Text fontSize="sm" fontWeight="semibold" color="gray.700">{article.author}</Text>
+                <Heading as="h3" fontSize="lg" fontWeight="semibold" color="gray.900">{article.title}</Heading>
+                <Text fontSize="sm" color="gray.600">{article.excerpt}</Text>
+                <Link
                   href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block mt-2 text-blue-500 hover:underline"
+                  isExternal
+                  mt={2}
+                  display="block"
+                  color="blue.500"
+                  _hover={{ textDecoration: 'underline' }}
                 >
                   Read More
-                </a>
-              </div>
+                </Link>
+              </Box>
             ))}
-          </div>
+          </Grid>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
-}
+};
