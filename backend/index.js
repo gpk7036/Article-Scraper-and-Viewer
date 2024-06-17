@@ -5,7 +5,11 @@ const maindata = require('./scrapper');
 const app = express();
 const port = 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://article-scraper-and-viewer-dbqp7taj7.vercel.app',
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type,Authorization'
+}));
 app.use(express.json());
 
 let articles = [];
