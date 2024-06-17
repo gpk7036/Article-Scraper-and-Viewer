@@ -76,7 +76,7 @@ export const ScrapeForm = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`https://article-scraper-and-viewer-enzf.vercel.app/scrape`, {
+      const response = await axios.post(`http://ec2-13-126-232-248.ap-south-1.compute.amazonaws.com:3000/scrape`, {
         topic: searchQuery,
       });
       const data = response.data;
