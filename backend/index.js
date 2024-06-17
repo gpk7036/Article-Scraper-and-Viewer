@@ -6,9 +6,7 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: 'https://article-scraper-and-viewer-dbqp7taj7.vercel.app',
-  methods: 'GET,POST,PUT,DELETE,OPTIONS',
-  allowedHeaders: 'Content-Type,Authorization'
+    origin: '*',
 }));
 app.use(express.json());
 
@@ -44,6 +42,8 @@ app.get('/articles', (req, res) => {
 app.get('/', (req, res) => {
     res.send('home page')
 })
+
+app.options('*', cors());
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

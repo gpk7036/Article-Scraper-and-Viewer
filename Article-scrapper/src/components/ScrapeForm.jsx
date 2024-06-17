@@ -76,7 +76,7 @@ export const ScrapeForm = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`https://backend-9nuokdhf3-praveen-kumars-projects-78e983e6.vercel.app/scrape`, {
+      const response = await axios.post(`http://localhost:3000/scrape`, {
         topic: searchQuery,
       });
       const data = response.data;
